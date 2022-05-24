@@ -1,0 +1,9 @@
+/Tensorflow/models
+/.ipynb_checkpoints
+/ipynb_checkpoints
+.ipynb_checkpoints
+*.jpg
+*.zip
+*.xml
+/Tensorflow/protoc
+/Tensorflow/workspace/models/my_ssd_resnet50v1fpn640x640
