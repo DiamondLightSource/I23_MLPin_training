@@ -2,7 +2,7 @@ import cv2
 import os
 
 path = os.getcwd()
-croppedpath = os.path.join(path, "cropped")
+croppedpath = os.path.join(path, "cropped", "pin_off")
 
 def showimg(toshow):    
     cv2.imshow("image", toshow)
@@ -13,7 +13,6 @@ def croppit(filein):
     img = cv2.imread(filein)
     cropped_image = img[400:650, 550:800]
     outfile = os.path.join(croppedpath, os.path.basename(filein))
-    print(outfile)
     cv2.imwrite(outfile, cropped_image)
     
 dir = input("Path to files: ")
