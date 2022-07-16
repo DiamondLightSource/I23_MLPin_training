@@ -16,9 +16,9 @@ acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 #data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
 cwd = os.getcwd()
 data_dir = os.path.join(cwd, "cropped")
-batch_size = 16
-img_height = 250
-img_width = 250
+batch_size = 64
+img_height = 250 #964 
+img_width = 250 #1292 
 image_size = (img_height, img_width)
 seed = 28273492
 
@@ -133,46 +133,3 @@ model.compile(
 model.fit(
     train_ds, epochs=epochs, callbacks=callbacks, validation_data=val_ds,
 )
-
-
-# model = Sequential()
-# model.add(data_augmentation)
-# model.add(normalization_layer)
-# model.add(Flatten(input_shape=(img_width, img_height)))
-# #model.add(Dense(128, activation="relu"))
-# #model.add(Dropout(0.5))
-# model.add(Dense(64, activation="relu"))
-# model.add(Dropout(0.5))
-# #model.add(Dense(32, activation="relu"))
-# model.add(Dense(2))
-
-# train_ds = train_ds.prefetch(buffer_size=32)
-# val_ds = val_ds.prefetch(buffer_size=32)
-
-# model.build()
-# model.summary()
-
-# model.compile(optimizer="adam", loss=keras.losses.SparseCategoricalCrossentropy(), metrics=["accuracy"])
-
-
-# cp_callback = keras.callbacks.ModelCheckpoint(filepath="checkpoints/", verbose=1, save_weights_only=True, save_freq=64*batch_size)
-# epochs = 100
-# training = model.fit(
-#     train_ds, epochs=epochs, batch_size=batch_size, validation_data=(val_ds), callbacks=cp_callback
-# )
-
-# # plot accuracy
-# plt.figure(dpi=100, figsize=(12, 4))
-# plt.subplot(1, 2, 1)
-# plt.plot(training.history[acc_str], label="Accuracy on training data")
-# plt.plot(training.history["val_" + acc_str], label="Accuracy on test data")
-# plt.legend()
-# plt.title("Accuracy")
-
-# # plot loss
-# plt.subplot(1, 2, 2)
-# plt.plot(training.history["loss"], label="Loss on training data")
-# plt.plot(training.history["val_loss"], label="Loss on test data")
-# plt.legend()
-# plt.title("Loss")
-# plt.show()
