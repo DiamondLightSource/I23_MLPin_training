@@ -1,8 +1,10 @@
 import cv2
 import os
 
+dir_orig = input("Path to files: ")
 path = os.getcwd()
-croppedpath = os.path.join(path, "cropped", "pin_off")
+dir = os.path.join(path, "goniopin", dir_orig)
+croppedpath = os.path.join(path, "goniopin", "cropped", dir_orig)
 
 def showimg(toshow):    
     cv2.imshow("image", toshow)
@@ -11,12 +13,11 @@ def showimg(toshow):
 
 def croppit(filein):
     img = cv2.imread(filein)
-    cropped_image = img[400:650, 550:800]
+    cropped_image = img[400:750, 610:770]
     outfile = os.path.join(croppedpath, os.path.basename(filein))
     cv2.imwrite(outfile, cropped_image)
     
-dir = input("Path to files: ")
-dir = os.path.join(path, dir)
+
 print(dir)
 for file in os.listdir(dir):
     if file.endswith("jpg"):

@@ -5,9 +5,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout
-import numpy as np
 import matplotlib.pyplot as plt
-import pathlib
 import os
 
 print("Using TensorFlow v%s" % tf.__version__)
@@ -15,10 +13,10 @@ acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
 #data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
 cwd = os.getcwd()
-data_dir = os.path.join(cwd, "cropped")
+data_dir = os.path.join(cwd, "goniopin", "uncropped")
 batch_size = 64
-img_height = 250 #964 
-img_width = 250 #1292 
+img_height = 500 #250 #964 
+img_width = 450 #160 #1292 
 image_size = (img_height, img_width)
 seed = 28273492
 
@@ -58,7 +56,7 @@ normalization_layer = keras.layers.Rescaling(
 data_augmentation = Sequential(
     [
         keras.layers.RandomFlip(input_shape=(img_height, img_width, 3)),
-        keras.layers.RandomRotation(5),
+        keras.layers.RandomRotation(45),
     ]
 )
 
@@ -123,7 +121,7 @@ model = make_model(input_shape=image_size + (3,), num_classes=2)
 epochs = 50
 
 callbacks = [
-    keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"),
+    keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"), tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True),
 ]
 model.compile(
     optimizer=keras.optimizers.Adam(1e-3),
@@ -133,3 +131,5 @@ model.compile(
 model.fit(
     train_ds, epochs=epochs, callbacks=callbacks, validation_data=val_ds,
 )
+
+model.save("final.h5")

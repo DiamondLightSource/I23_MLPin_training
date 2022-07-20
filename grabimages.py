@@ -27,11 +27,11 @@ def download(url, pathname):
 
 if __name__ == "__main__":
     path = os.getcwd()
-    path = os.path.join(path, "goniopin")
+    path = os.path.join(path, "goniopin", "pin_on")
     #path = os.path.join(path, "pin")
     while 1 > 0:
         download("http://bl23i-di-serv-02.diamond.ac.uk:8080/ECAM6.mjpg.jpg", path)
-        time.sleep(2.5)
+        time.sleep(1)
         #download("http://bl23i-di-serv-01.diamond.ac.uk:8080/ECAM9.mjpg.jpg", path)
         #time.sleep(1.1)
         #download("http://bl23i-di-serv-01.diamond.ac.uk:8080/ECAM10.mjpg.jpg", path)        
