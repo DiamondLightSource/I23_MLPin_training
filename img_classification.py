@@ -8,18 +8,18 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout
 import matplotlib.pyplot as plt
 import os
 
+
 print("Using TensorFlow v%s" % tf.__version__)
 acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
 #data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
 cwd = os.getcwd()
-data_dir = os.path.join(cwd, "goniopin", "uncropped")
-batch_size = 64
-img_height = 500 #250 #964 
-img_width = 450 #160 #1292 
+data_dir = os.path.join(cwd, "goniopin", "cropped")
+batch_size = 10
+img_height = 250 #250 #964 
+img_width = 160 #160 #1292 
 image_size = (img_height, img_width)
 seed = 28273492
-
 
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     data_dir,
@@ -121,7 +121,7 @@ model = make_model(input_shape=image_size + (3,), num_classes=2)
 epochs = 50
 
 callbacks = [
-    keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"), tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True),
+    keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"), tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3, restore_best_weights=True),
 ]
 model.compile(
     optimizer=keras.optimizers.Adam(1e-3),
