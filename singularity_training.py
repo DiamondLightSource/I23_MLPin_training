@@ -10,13 +10,13 @@ from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 
 
-CUSTOM_MODEL_NAME = 'my_ssd_resnet101_v1_fpn_640x640_coco17_tpu-8' 
+CUSTOM_MODEL_NAME = 'my_ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8' 
 #CUSTOM_MODEL_NAME = 'my_ssd_resnet50v1fpn640x640'
 
-PRETRAINED_MODEL_NAME = 'ssd_resnet101_v1_fpn_640x640_coco17_tpu-8'
+PRETRAINED_MODEL_NAME = 'ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8'
 #PRETRAINED_MODEL_NAME = 'ssd_resnet50_v1_fpn_640x640_coco17_tpu-8'
 
-PRETRAINED_MODEL_URL = 'http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet101_v1_fpn_640x640_coco17_tpu-8.tar.gz'
+PRETRAINED_MODEL_URL = 'http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8.tar.gz'
 #PRETRAINED_MODEL_URL = 'http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8.tar.gz'
 
 TF_RECORD_SCRIPT_NAME = 'generate_tfrecord.py'
@@ -90,7 +90,10 @@ pipeline_config.eval_input_reader[0].tf_record_input_reader.input_path[:] = [os.
 config_text = text_format.MessageToString(pipeline_config)                                                                                                                                                                                                        
 with tf.io.gfile.GFile(files['PIPELINE_CONFIG'], "wb") as f:                                                                                                                                                                                                                     
     f.write(config_text)  
-    
+
+with open("runall.sh", "w") as runallfile:
+    runallfile.write("tfimage=/dls_sw/apps/tensorflow/singularity/tensorflow_2.8.2-gpu-jupyter.sif\n") 
+
 TRAINING_SCRIPT = os.path.join(paths['APIMODEL_PATH'], 'research', 'object_detection', 'model_main_tf2.py')
 
 command = "python {} --model_dir={} --pipeline_config_path={} --num_train_steps=2000".format(TRAINING_SCRIPT, paths['CHECKPOINT_PATH'],files['PIPELINE_CONFIG'])
@@ -98,23 +101,43 @@ command = "python {} --model_dir={} --pipeline_config_path={} --num_train_steps=
 print("\nTraining\n")
 print(command)
 
+with open("runall.sh", "a") as runallfile:
+    runallfile.write("echo Training\n")
+    runallfile.write(f"singularity exec --nv --home $PWD $tfimage {command}\n")
+
 command = "python {} --model_dir={} --pipeline_config_path={} --checkpoint_dir={}".format(TRAINING_SCRIPT, paths['CHECKPOINT_PATH'],files['PIPELINE_CONFIG'], paths['CHECKPOINT_PATH'])
 print("\nEvaluating\n")
 print(command)
+
+with open("runall.sh", "a") as runallfile:
+    runallfile.write("echo Evaluating\n")
+    runallfile.write(f"singularity exec --nv --home $PWD $tfimage {command}\n")
 
 FREEZE_SCRIPT = os.path.join(paths['APIMODEL_PATH'], 'research', 'object_detection', 'exporter_main_v2.py ')
 command = "python {} --input_type=image_tensor --pipeline_config_path={} --trained_checkpoint_dir={} --output_directory={}".format(FREEZE_SCRIPT ,files['PIPELINE_CONFIG'], paths['CHECKPOINT_PATH'], paths['OUTPUT_PATH'])
 print("\nFreezing\n")
 print(command)
 
+with open("runall.sh", "a") as runallfile:
+    runallfile.write("echo Freezing\n")
+    runallfile.write(f"singularity exec --nv --home $PWD $tfimage {command}\n")
+
 command = "tensorflowjs_converter --input_format=tf_saved_model --output_node_names='detection_boxes,detection_classes,detection_features,detection_multiclass_scores,detection_scores,num_detections,raw_detection_boxes,raw_detection_scores' --output_format=tfjs_graph_model --signature_name=serving_default {} {}".format(os.path.join(paths['OUTPUT_PATH'], 'saved_model'), paths['TFJS_PATH'])
 print("\nTo TFJS\n")
 print(command)
+
+with open("runall.sh", "a") as runallfile:
+    runallfile.write("echo Converting to TFJS\n")
+    runallfile.write(f"singularity exec --nv --home $PWD $tfimage {command}\n")
 
 TFLITE_SCRIPT = os.path.join(paths['APIMODEL_PATH'], 'research', 'object_detection', 'export_tflite_graph_tf2.py ')
 command = "python {} --pipeline_config_path={} --trained_checkpoint_dir={} --output_directory={}".format(TFLITE_SCRIPT ,files['PIPELINE_CONFIG'], paths['CHECKPOINT_PATH'], paths['TFLITE_PATH'])
 print("\nTo TFLite\n")
 print(command)
+
+with open("runall.sh", "a") as runallfile:
+    runallfile.write("echo Converting to TFLite\n")
+    runallfile.write(f"singularity exec --nv --home $PWD $tfimage {command}\n")
 
 FROZEN_TFLITE_PATH = os.path.join(paths['TFLITE_PATH'], 'saved_model')
 TFLITE_MODEL = os.path.join(paths['TFLITE_PATH'], 'saved_model', 'detect.tflite')
@@ -129,6 +152,9 @@ command = "tflite_convert \
 --allow_custom_ops".format(FROZEN_TFLITE_PATH, TFLITE_MODEL, )
 
 print(command)
+
+with open("runall.sh", "a") as runallfile:
+    runallfile.write(f"singularity exec --nv --home $PWD $tfimage {command}\n")
 
 
 # Load pipeline config and build a detection model

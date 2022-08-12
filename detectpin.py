@@ -2,12 +2,15 @@ import os
 import cv2
 import numpy as np
 import tensorflow as tf
+import import_crop_fromautoimages
 from object_detection.utils import config_util
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 from tkinter import *
-#import time
+
+
+
 CUSTOM_MODEL_NAME = "my_ssd_resnet50v1fpn640x640"
 LABEL_MAP_NAME = "label_map.pbtxt"
 paths = {
@@ -27,12 +30,16 @@ configs = config_util.get_configs_from_pipeline_file(files["PIPELINE_CONFIG"])
 detection_model = model_builder.build(model_config=configs["model"], is_training=False)
 ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
 ckpt.restore(os.path.join(paths["CHECKPOINT_PATH"], "ckpt-18")).expect_partial()
+
+
 @tf.function
 def detect_fn(image):
     image, shapes = detection_model.preprocess(image)
     prediction_dict = detection_model.predict(image, shapes)
     detections = detection_model.postprocess(prediction_dict, shapes)
     return detections
+
+
 category_index = label_map_util.create_category_index_from_labelmap(files["LABELMAP"])
 
 cap = cv2.VideoCapture("http://bl23i-di-serv-02.diamond.ac.uk:8080/ECAM6.mjpg.mjpg")
@@ -53,7 +60,7 @@ while True:
     if detections["detection_scores"][0] > 0.7:
         print(f'I see pin, with a confidence of {detections["detection_scores"][0]}')
     else:
-        print('Not sure if pin is there...')
+        print("Not sure if pin is there...")
     label_id_offset = 1
     image_np_with_detections = image_np.copy()
     viz_utils.visualize_boxes_and_labels_on_image_array(
@@ -71,4 +78,4 @@ while True:
     # plt.show()
     # plt.savefig(os.path.splitext(IMAGE_PATH)[0] + "_out.jpg")
     cv2.imshow("Pin", image_np_with_detections)
-    cv2.waitKey(500)
+    cv2.waitKey(5000)

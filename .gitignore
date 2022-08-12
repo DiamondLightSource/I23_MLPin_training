@@ -130,3 +130,5 @@ Tensorflow/workspace/models/my_ssd_resnet101_v1_fpn_640x640_coco17_tpu-8/pipelin
 Tensorflow/workspace/models/my_ssd_resnet101_v1_fpn_640x640_coco17_tpu-8/train/events.out.tfevents.1656946766.cs05r-sc-gpu05-16.diamond.ac.uk.3401019.0.v2
 Tensorflow/workspace/annotations/test.record
 Tensorflow/workspace/annotations/train.record
+ml_pindet_teach.sh.*
+runall.sh.*

@@ -1,6 +1,7 @@
 from gc import callbacks
 from sklearn import preprocessing
 import tensorflow as tf
+import import_crop_fromautoimages
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
@@ -8,15 +9,17 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout
 import matplotlib.pyplot as plt
 import os
 
+#run with latest set of images
+#import_crop_fromautoimages.run()
 
 print("Using TensorFlow v%s" % tf.__version__)
 acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
 #data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
 cwd = os.getcwd()
-data_dir = os.path.join(cwd, "goniopin", "cropped")
-batch_size = 10
-img_height = 250 #250 #964 
+data_dir = os.path.join(cwd, "goniopin_auto")
+batch_size = 32
+img_height = 300 #250 #964 
 img_width = 160 #160 #1292 
 image_size = (img_height, img_width)
 seed = 28273492
