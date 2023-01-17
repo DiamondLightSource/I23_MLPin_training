@@ -9,19 +9,19 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout
 import matplotlib.pyplot as plt
 import os
 
-#run with latest set of images
-#import_crop_fromautoimages.run()
+# run with latest set of images
+# import_crop_fromautoimages.run()
 strategy = tf.distribute.MirroredStrategy()
 with strategy.scope():
     print("Using TensorFlow v%s" % tf.__version__)
     acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
-    #data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
+    # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
     cwd = os.getcwd()
     data_dir = os.path.join(cwd, "goniopin_auto_12012023")
     batch_size = 32
-    img_height = 300 #250 #964 
-    img_width = 160 #160 #1292 
+    img_height = 300  # 250 #964
+    img_width = 160  # 160 #1292
     image_size = (img_height, img_width)
     seed = 28273492
 
@@ -54,14 +54,22 @@ with strategy.scope():
 
     plt.show()
 
-    normalization_layer = keras.layers.Rescaling(
-        1.0 / 255
-    )
+    normalization_layer = keras.layers.Rescaling(1.0 / 255)
 
     data_augmentation = Sequential(
         [
-            keras.layers.RandomFlip(input_shape=(img_height, img_width, 3)),
-            keras.layers.RandomRotation(45),
+            keras.layers.RandomFlip(
+                input_shape=(img_height, img_width, 3), mode="horizontal"
+            ),
+            keras.layers.RandomRotation(35),
+            keras.layers.RandomTranslation(
+                height_factor=0.1, width_factor=0.2, fill_mode="nearest"
+            ),
+            keras.layers.RandomContrast(factor=0.6),
+            keras.layers.RandomBrightness(factor=0.6),
+            keras.layers.RandomWidth(factor=0.2),
+            keras.layers.RandomHeight(factor=0.2),
+            keras.layers.RandomZoom(height_factor=0.2, fill_mode="nearest"),
         ]
     )
 
@@ -69,7 +77,6 @@ with strategy.scope():
     for images, _ in train_ds.take(1):
         for i in range(9):
             augmented_images = data_augmentation(images)
-            ax = plt.subplot(3, 3, i + 1)
             plt.imshow(augmented_images[0].numpy().astype("uint8"))
             plt.axis("off")
     plt.show()
@@ -77,7 +84,7 @@ with strategy.scope():
     def make_model(input_shape, num_classes):
         inputs = keras.Input(shape=input_shape)
         x = data_augmentation(inputs)
-        x = layers.Rescaling(1./255)(x)
+        x = layers.Rescaling(1.0 / 255)(x)
         x = layers.Conv2D(32, 3, strides=2, padding="same")(x)
         x = layers.BatchNormalization()(x)
         x = layers.Activation("relu")(x)
@@ -126,7 +133,7 @@ with strategy.scope():
 
         x = layers.GlobalAveragePooling2D()(x)
         if num_classes == 2:
-            activation = "sigmoid"
+            activation = "softmax"
             units = 1
         else:
             activation = "softmax"
@@ -136,13 +143,15 @@ with strategy.scope():
         outputs = layers.Dense(units, activation=activation)(x)
         return keras.Model(inputs, outputs)
 
-
     model = make_model(input_shape=image_size + (3,), num_classes=2)
 
-    epochs = 50
+    epochs = 100
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"), tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3, restore_best_weights=True),
+        keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"),
+        tf.keras.callbacks.EarlyStopping(
+            monitor="loss", patience=6, restore_best_weights=True
+        ),
     ]
     model.compile(
         optimizer=keras.optimizers.Adam(1e-3),
@@ -151,7 +160,10 @@ with strategy.scope():
     )
 
     model.fit(
-        train_ds, epochs=epochs, callbacks=callbacks, validation_data=val_ds,
+        train_ds,
+        epochs=epochs,
+        callbacks=callbacks,
+        validation_data=val_ds,
     )
 
     model.save("final.h5")
