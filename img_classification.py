@@ -1,16 +1,13 @@
+import os
 from gc import callbacks
-from sklearn import preprocessing
 import tensorflow as tf
-import import_crop_fromautoimages
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout
 import matplotlib.pyplot as plt
-import os
 
-# run with latest set of images
-# import_crop_fromautoimages.run()
+
 strategy = tf.distribute.MirroredStrategy()
 with strategy.scope():
     print("Using TensorFlow v%s" % tf.__version__)
