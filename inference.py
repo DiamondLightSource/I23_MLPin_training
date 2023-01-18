@@ -1,3 +1,5 @@
+#!/dls/science/groups/i23/scripts/chris/TFODCourse/tfod/bin/python
+
 import tensorflow as tf
 from tensorflow import keras
 import cv2
@@ -74,4 +76,4 @@ if __name__ == "__main__":
     run()
     while True:
         infer()
-        sleep(random.randint(50, 300))
+        sleep(random.randint(5, 160))

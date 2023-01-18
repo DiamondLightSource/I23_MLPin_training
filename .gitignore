@@ -210,3 +210,4 @@ Tensorflow/workspace/annotations/test.record
 Tensorflow/workspace/annotations/train.record
 Tensorflow/workspace/models/my_ssd_mobnet/tfliteexport/saved_model/detect.tflite
 Tensorflow/workspace/models/my_ssd_mobnet/tfliteexport/saved_model/saved_model.pb
+*.png

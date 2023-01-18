@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from gc import callbacks
 import tensorflow as tf
 from tensorflow import keras
@@ -7,9 +8,9 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout
 import matplotlib.pyplot as plt
 
+parallel = True
 
-strategy = tf.distribute.MirroredStrategy()
-with strategy.scope():
+def run():
     print("Using TensorFlow v%s" % tf.__version__)
     acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
@@ -20,7 +21,7 @@ with strategy.scope():
     img_height = 300  # 250 #964
     img_width = 160  # 160 #1292
     image_size = (img_height, img_width)
-    seed = 28273492
+    seed = np.randint(11111111,99999999)
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
@@ -48,35 +49,26 @@ with strategy.scope():
             plt.imshow(images[i].numpy().astype("uint8"))
             plt.title(int(labels[i]))
             plt.axis("off")
-
-    plt.show()
-
-    normalization_layer = keras.layers.Rescaling(1.0 / 255)
+    plt.savefig(os.path.join(cwd, "un-augmented.png"))
 
     data_augmentation = Sequential(
         [
-            keras.layers.RandomFlip(
-                input_shape=(img_height, img_width, 3), mode="horizontal"
-            ),
-            keras.layers.RandomRotation(35),
             keras.layers.RandomTranslation(
                 height_factor=0.1, width_factor=0.2, fill_mode="nearest"
             ),
-            keras.layers.RandomContrast(factor=0.6),
-            keras.layers.RandomBrightness(factor=0.6),
-            keras.layers.RandomWidth(factor=0.2),
-            keras.layers.RandomHeight(factor=0.2),
-            keras.layers.RandomZoom(height_factor=0.2, fill_mode="nearest"),
+            keras.layers.RandomContrast(factor=0.2),
+            keras.layers.RandomBrightness(factor=0.3),
         ]
     )
 
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(20, 20))
     for images, _ in train_ds.take(1):
-        for i in range(9):
+        for i in range(25):
             augmented_images = data_augmentation(images)
-            plt.imshow(augmented_images[0].numpy().astype("uint8"))
+            ax = plt.subplot(5, 5, i + 1)
+            plt.imshow(augmented_images[i].numpy().astype("uint8"))
             plt.axis("off")
-    plt.show()
+    plt.savefig(os.path.join(cwd, "augmented.png"))
 
     def make_model(input_shape, num_classes):
         inputs = keras.Input(shape=input_shape)
@@ -90,7 +82,7 @@ with strategy.scope():
         x = layers.Activation("relu")(x)
         previous_block_activation = x  # Set aside residual
 
-        for size in [128, 256, 512, 728]:
+        for size in [128, 256, 512]:
             x = layers.Activation("relu")(x)
             x = layers.SeparableConv2D(size, 3, padding="same")(x)
             x = layers.BatchNormalization()(x)
@@ -130,7 +122,7 @@ with strategy.scope():
 
         x = layers.GlobalAveragePooling2D()(x)
         if num_classes == 2:
-            activation = "softmax"
+            activation = "sigmoid"
             units = 1
         else:
             activation = "softmax"
@@ -147,13 +139,13 @@ with strategy.scope():
     callbacks = [
         keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"),
         tf.keras.callbacks.EarlyStopping(
-            monitor="loss", patience=6, restore_best_weights=True
+            monitor="loss", patience=15, restore_best_weights=True
         ),
     ]
     model.compile(
         optimizer=keras.optimizers.Adam(1e-3),
         loss="binary_crossentropy",
-        metrics=["accuracy"],
+        metrics=["accuracy", "mae", "categorical_accuracy"],
     )
 
     model.fit(
@@ -164,3 +156,11 @@ with strategy.scope():
     )
 
     model.save("final.h5")
+
+
+strategy = tf.distribute.MirroredStrategy()
+if not parallel:
+    run()
+else:
+    with strategy.scope():
+        run()
