@@ -1,5 +1,5 @@
 import os
-import numpy as np
+import random
 from gc import callbacks
 import tensorflow as tf
 from tensorflow import keras
@@ -21,7 +21,7 @@ def run():
     img_height = 300  # 250 #964
     img_width = 160  # 160 #1292
     image_size = (img_height, img_width)
-    seed = np.randint(11111111,99999999)
+    seed = random.randint(11111111,99999999)
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
@@ -58,6 +58,7 @@ def run():
             ),
             keras.layers.RandomContrast(factor=0.2),
             keras.layers.RandomBrightness(factor=0.3),
+            keras.layers.RandomRotation(0.02, fill_mode="nearest"),
         ]
     )
 
@@ -82,7 +83,7 @@ def run():
         x = layers.Activation("relu")(x)
         previous_block_activation = x  # Set aside residual
 
-        for size in [128, 256, 512]:
+        for size in [128, 256, 512, 1024, 2048]:
             x = layers.Activation("relu")(x)
             x = layers.SeparableConv2D(size, 3, padding="same")(x)
             x = layers.BatchNormalization()(x)
@@ -139,7 +140,7 @@ def run():
     callbacks = [
         keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"),
         tf.keras.callbacks.EarlyStopping(
-            monitor="loss", patience=15, restore_best_weights=True
+            monitor="loss", patience=3, restore_best_weights=True
         ),
     ]
     model.compile(

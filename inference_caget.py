@@ -10,7 +10,8 @@ from time import sleep
 import numpy as np
 import matplotlib.pylab as plt
 from datetime import datetime
-import random
+import ca
+import pv
 
 model = tf.keras.models.load_model("final.h5")
 model.summary()
@@ -48,7 +49,6 @@ def urltoimage(url):
 
 
 def infer():
-    # with urllib.request.urlopen("http://bl23i-di-serv-02.diamond.ac.uk:8080/ECAM6.mjpg.jpg") as url:
     now = datetime.now()
     this_second = now.strftime("%m%d%Y%H%M%S")
     stream = urltoimage("http://bl23i-di-serv-02.diamond.ac.uk:8080/ECAM6.mjpg.jpg")
@@ -58,23 +58,23 @@ def infer():
     img_array = tf.expand_dims(img_array, 0)
     predictions = model.predict(img_array)
     score = predictions[0]
-    #print(predictions)
-    if score > 0.94:
+    if score > 0.95:
         print(f"{100 * score}% sure pin is ON")
         plt.savefig(os.path.join(pinon, this_second + "_" + str(int(100 * score))))
-    elif score < 0.06:
+    elif score < 0.05:
         print(f"{100 * (1 - score)}% sure pin is OFF")
         plt.savefig(
             os.path.join(pinoff, this_second + "_" + str(int(100 * (1 - score))))
         )
     else:
         print("No idea.")
-        plt.savefig(os.path.join(unsure, this_second))
-
+        plt.savefig(os.path.join(unsure, this_second))    
 
 if __name__ == "__main__":
     run()
     while True:
-        infer()
-        sleep(1)
-        #sleep(random.randint(5, 160))
+        if np.round(float(ca.caget(pv.grip_x_rbv)), 1) != 0.4:
+            infer()
+            sleep(1)
+        else:
+            sleep(1)
