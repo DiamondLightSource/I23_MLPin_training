@@ -211,3 +211,6 @@ Tensorflow/workspace/annotations/train.record
 Tensorflow/workspace/models/my_ssd_mobnet/tfliteexport/saved_model/detect.tflite
 Tensorflow/workspace/models/my_ssd_mobnet/tfliteexport/saved_model/saved_model.pb
 *.png
+.nv/*
+__pycache__/*
+tuning/img_classification_categorical/oracle.json
