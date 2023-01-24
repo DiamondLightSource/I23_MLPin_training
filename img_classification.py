@@ -11,15 +11,14 @@ import matplotlib.pyplot as plt
 parallel = True
 
 def run():
-    print("Using TensorFlow v%s" % tf.__version__)
-    acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
+    print(f"Using TensorFlow {tf.__version__}")
+    #acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
-    # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
     cwd = os.getcwd()
     data_dir = os.path.join(cwd, "goniopin_auto_12012023")
     batch_size = 32
-    img_height = 300  # 250 #964
-    img_width = 160  # 160 #1292
+    img_height = 300 
+    img_width = 160 
     image_size = (img_height, img_width)
     seed = random.randint(11111111,99999999)
 
