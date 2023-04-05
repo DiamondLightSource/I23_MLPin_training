@@ -31,7 +31,7 @@ def infer():
     predictions = model.predict(img_array, verbose=0)
     score = tf.nn.softmax(predictions[0])
     #print("This image most likely belongs to {} with a {:.2f} percent confidence.".format(classes[np.argmax(score)], 100 * np.max(score)))
-    print("Status is probably {} with {:.2f} % conf.".format(classes[np.argmax(score)], 100 * np.max(score)))
+    print("Status is probably {} with {:.2f} % conf.".format(classes[np.argmax(score)], 200 * np.max(score)))
 
 
 if __name__ == "__main__":

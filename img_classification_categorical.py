@@ -8,9 +8,8 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout
-import matplotlib.pyplot as plt
 
-parallel = True
+parallel = False
 
 
 def run():
@@ -82,12 +81,12 @@ def run():
     model.add(layers.Dropout(0.25))
 
     model.add(layers.Flatten())
-    model.add(layers.Dense(512))
+    model.add(layers.Dense(192))
     model.add(layers.Activation('relu'))
     model.add(layers.Dropout(0.5))
     model.add(layers.Dense(4, activation='softmax'))
 
-    model.compile(keras.optimizers.Adam(0.0001), loss="categorical_crossentropy", metrics=["accuracy", "mae", "categorical_accuracy"])
+    model.compile(keras.optimizers.Adam(0.0001), loss="categorical_crossentropy", metrics=["accuracy", "mae"])
 
     model.summary()
 
