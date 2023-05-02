@@ -537,3 +537,7 @@ tuning/img_classification_categorical/trial_0078/checkpoint
 tuning/img_classification_categorical/trial_0078/checkpoint.data-00000-of-00001
 tuning/img_classification_categorical/trial_0078/checkpoint.index
 tuning/img_classification_categorical/trial_0078/trial.json
+<<<<<<< HEAD
+=======
+categorical.tflite
+>>>>>>> 6ac67e7 (update gitignore)
