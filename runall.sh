@@ -1,3 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=i23pinml
+#SBATCH --nodes=1
+#SBATCH --ntasks=5
+#SBATCH --cpus-per-task=1
+#SBATCH --gres=gpu:4
+#SBATCH --partition=cs05r
+#SBATCH --time=23:59:59
+
+
 tfimage=/dls_sw/apps/tensorflow/singularity/tensorflow_2.8.2-gpu-jupyter.sif
 echo Training
 singularity exec --nv --home $PWD $tfimage python Tensorflow/models/research/object_detection/model_main_tf2.py --model_dir=Tensorflow/workspace/models/my_ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8 --pipeline_config_path=Tensorflow/workspace/models/my_ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8/pipeline.config --num_train_steps=2000

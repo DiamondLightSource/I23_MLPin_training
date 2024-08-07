@@ -9,7 +9,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Dropout
 
-parallel = False
+parallel = True
 
 
 def run():
@@ -19,11 +19,11 @@ def run():
     # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
     cwd = os.getcwd()
     data_dir = os.path.join(cwd, "goniopin_auto_24012023")
-    batch_size = 32
-    img_height = 300  # 250 #964
-    img_width = 160  # 160 #1292
+    batch_size = 8
+    img_height = 800  # 250 #964
+    img_width = 800  # 160 #1292
     image_size = (img_height, img_width)
-    seed = random.randint(11111111,99999999)
+    seed = random.randint(11111111, 99999999)
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
@@ -62,44 +62,49 @@ def run():
     )
 
     model = Sequential()
-    model.add(layers.InputLayer(input_shape=(img_height,img_width,3)))
+    model.add(layers.InputLayer(input_shape=(img_height, img_width, 3)))
     model.add(data_augmentation)
     model.add(layers.Rescaling(1.0 / 255))
-    
-    model.add(layers.Conv2D(32, 3, padding='same'))
-    model.add(layers.Activation('relu'))
+
+    model.add(layers.Conv2D(32, 3, padding="same"))
+    model.add(layers.Activation("relu"))
     model.add(layers.Conv2D(32, (3, 3)))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Dropout(0.25))
 
-    model.add(layers.Conv2D(64, (3, 3), padding='same'))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Conv2D(64, (3, 3), padding="same"))
+    model.add(layers.Activation("relu"))
     model.add(layers.Conv2D(64, (3, 3)))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Dropout(0.25))
 
     model.add(layers.Flatten())
     model.add(layers.Dense(192))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Activation("relu"))
     model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(4, activation='softmax'))
+    model.add(layers.Dense(4, activation="softmax"))
 
-    model.compile(keras.optimizers.Adam(0.0001), loss="categorical_crossentropy", metrics=["accuracy", "mae"])
+    model.compile(
+        keras.optimizers.Adam(0.0001),
+        loss="categorical_crossentropy",
+        metrics=["accuracy", "mae"],
+    )
 
     model.summary()
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"),
+        keras.callbacks.ModelCheckpoint("save.h5"),
         tf.keras.callbacks.EarlyStopping(
             monitor="loss", patience=3, restore_best_weights=True
         ),
     ]
 
-    model.fit(train_ds, callbacks=callbacks, epochs=10, validation_data=val_ds)
+    model.fit(train_ds, callbacks=callbacks, epochs=100, validation_data=val_ds)
 
     model.save("categorical.h5")
+
 
 strategy = tf.distribute.MirroredStrategy()
 if not parallel:

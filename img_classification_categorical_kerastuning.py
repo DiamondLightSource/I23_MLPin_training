@@ -11,14 +11,15 @@ import matplotlib.pyplot as plt
 import keras_tuner as kt
 
 parallel = True
-tf.get_logger().setLevel('ERROR')
+tf.get_logger().setLevel("ERROR")
+
 
 def run():
     print("Using TensorFlow v%s" % tf.__version__)
 
     # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
     cwd = os.getcwd()
-    data_dir = os.path.join(cwd, "goniopin_auto_24012023")
+    data_dir = os.path.join(cwd, "goniopin_auto_0808023")
     img_height = 300  # 250 #964
     img_width = 160  # 160 #1292
     seed = random.randint(11111111, 99999999)
@@ -47,7 +48,7 @@ def run():
             keras.layers.RandomTranslation(
                 height_factor=0.1, width_factor=0.2, fill_mode="nearest"
             ),
-            #keras.layers.RandomContrast(factor=0.2),
+            # keras.layers.RandomContrast(factor=0.2),
             keras.layers.RandomBrightness(factor=0.2),
             keras.layers.RandomRotation(0.02, fill_mode="nearest"),
         ]
@@ -96,7 +97,7 @@ def run():
         factor=3,
         hyperband_iterations=3,
         directory="tuning",
-        project_name="img_classification_categorical"
+        project_name="img_classification_categorical",
     )
 
     callbacks = [
@@ -106,20 +107,22 @@ def run():
     ]
 
     tuner.search(train_ds, callbacks=callbacks, epochs=50, validation_data=val_ds)
-    best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
-    print(f"""
+    print(
+        f"""
     The hyperparameter search is complete. The optimal number of units in the first densely-connected
     layer is {best_hps.get('units')} and the optimal learning rate for the optimizer
     is {best_hps.get('learning_rate')}.
-    """)
+    """
+    )
 
     model = tuner.hypermodel.build(best_hps)
     history = model.fit(train_ds, epochs=50, validation_split=0.2, callbacks=callbacks)
 
-    val_acc_per_epoch = history.history['val_accuracy']
+    val_acc_per_epoch = history.history["val_accuracy"]
     best_epoch = val_acc_per_epoch.index(max(val_acc_per_epoch)) + 1
-    print('Best epoch: %d' % (best_epoch,))
+    print("Best epoch: %d" % (best_epoch,))
 
     hypermodel = tuner.hypermodel.build(best_hps)
     hypermodel.fit(train_ds, epochs=best_epoch, validation_split=0.2)
@@ -128,6 +131,7 @@ def run():
     print("[test loss, test accuracy]:", eval_result)
 
     hypermodel.save("hyper.h5")
+
 
 strategy = tf.distribute.MirroredStrategy()
 if not parallel:
