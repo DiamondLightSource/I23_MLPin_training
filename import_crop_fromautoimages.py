@@ -71,19 +71,19 @@ def run():
         else:
             os.mkdir(os.path.join(path, folder))
 
-    # for pinon_image_dir in ON_folders:
-    #     searchdir = os.path.join(snapshots_location, "pin_ON", pinon_image_dir)
-    #     files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
-    #     for file in tqdm(files, desc=f"Processing {pinon_image_dir}"):
-    #         image = os.path.join(searchdir, file)
-    #         croppit(image, os.path.join(path, "pinon"))
+    for pinon_image_dir in ON_folders:
+        searchdir = os.path.join(snapshots_location, "pin_ON", pinon_image_dir)
+        files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
+        for file in tqdm(files, desc=f"Processing {pinon_image_dir}"):
+            image = os.path.join(searchdir, file)
+            croppit(image, os.path.join(path, "pinon"))
 
-    # for pinoff_image_dir in OFF_folders:
-    #     searchdir = os.path.join(snapshots_location, "pin_OFF", pinoff_image_dir)
-    #     files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
-    #     for file in tqdm(files, desc=f"Processing {pinoff_image_dir}"):
-    #         image = os.path.join(searchdir, file)
-    #         croppit(image, os.path.join(path, "pinoff"))
+    for pinoff_image_dir in OFF_folders:
+        searchdir = os.path.join(snapshots_location, "pin_OFF", pinoff_image_dir)
+        files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
+        for file in tqdm(files, desc=f"Processing {pinoff_image_dir}"):
+            image = os.path.join(searchdir, file)
+            croppit(image, os.path.join(path, "pinoff"))
 
 
 if __name__ == "__main__":
