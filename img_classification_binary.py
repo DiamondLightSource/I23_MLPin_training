@@ -2,16 +2,14 @@
 
 import os
 import random
-from gc import callbacks
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Dropout
 import datetime
 
 parallel = True
-
+now_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 def run():
     print("Using TensorFlow v%s" % tf.__version__)
@@ -19,7 +17,7 @@ def run():
 
     # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
     cwd = os.getcwd()
-    data_dir = os.path.join(cwd, "goniopin_auto_13022025")
+    data_dir = os.path.join(cwd, "goniopin_auto_14022025_binary")
     batch_size = 16
     img_height = 800  # 250 #964
     img_width = 800  # 160 #1292
@@ -33,7 +31,7 @@ def run():
         seed=seed,
         image_size=(img_height, img_width),
         batch_size=batch_size,
-        label_mode="categorical",
+        label_mode="binary",
     )
 
     val_ds = tf.keras.preprocessing.image_dataset_from_directory(
@@ -43,7 +41,7 @@ def run():
         seed=seed,
         image_size=(img_height, img_width),
         batch_size=batch_size,
-        label_mode="categorical",
+        label_mode="binary",
     )
 
     class_names = train_ds.class_names
@@ -95,29 +93,29 @@ def run():
     model.add(layers.BatchNormalization())
     model.add(layers.Activation("relu"))
     model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(4, activation="softmax"))
+    model.add(layers.Dense(1, activation="sigmoid"))
 
     model.compile(
         keras.optimizers.Adam(0.0001),
-        loss="categorical_crossentropy",
-        metrics=["accuracy", "categorical_accuracy", "Precision", "Recall", "AUC"],
+        loss="binary_crossentropy",
+        metrics=["accuracy", "Precision", "Recall", "AUC"],
     )
 
     model.summary()
-    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    log_dir = "logs/fit/" + now_string
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, update_freq="batch")
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(f"save_batch{str(batch_size)}.h5", save_best_only=True),
+        keras.callbacks.ModelCheckpoint(f"{now_string}_save_binary_batch{str(batch_size)}.h5", save_best_only=True),
         tf.keras.callbacks.EarlyStopping(
-            monitor="loss", patience=3, restore_best_weights=True
+            monitor="loss", patience=10, restore_best_weights=True
         ),
         tensorboard_callback,
     ]
 
-    model.fit(train_ds, callbacks=callbacks, epochs=20, validation_data=val_ds)
+    model.fit(train_ds, callbacks=callbacks, epochs=100, validation_data=val_ds)
 
-    model.save(f"categorical_batch{str(batch_size)}.h5")
+    model.save(f"{now_string}_binary_batch{str(batch_size)}.h5")
 
 if __name__ == "__main__":
     strategy = tf.distribute.MirroredStrategy()
