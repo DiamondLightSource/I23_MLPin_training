@@ -5,11 +5,11 @@ import os
 import numpy as np
 from datetime import datetime
 
-model = tf.keras.models.load_model("final.h5")
+model = tf.keras.models.load_model("20250215-200544_save_binary_batch16.h5")
 model.summary()
 
-test_data_dir = "test_13022025"
-categories = ["pinon", "pinoff", "light", "dark"]
+test_data_dir = "test_14022025_binary"
+categories = ["pinoff", "pinon"]
 img_height = 800
 img_width = 800
 
@@ -31,10 +31,17 @@ def run_inference():
             img = np.expand_dims(img, axis=0) 
 
             prediction = model.predict(img)
-            predicted_label = categories[np.argmax(prediction)]
+            if prediction < 0.5:
+                predicted_label = "pinoff"
+            else:
+                predicted_label = "pinon"
+            print(f"Image: {image_name}, Prediction: {prediction}, Predicted Label: {predicted_label}, Actual Label: {category}")
+
 
             if predicted_label == category:
                 correct_predictions += 1
+            else:
+                print(f"Misclassified: {image_name}, Predicted: {predicted_label}, Actual: {category}")
             total_predictions += 1
 
     accuracy = correct_predictions / total_predictions
