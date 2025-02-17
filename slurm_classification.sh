@@ -5,8 +5,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --partition=cs05r
 #SBATCH --time=23:59:59
-#SBATCH --output=./fromslurm_batch16.log
 
 tfimage=/dls_sw/apps/tensorflow/singularity/tensorflow_2.8.2-gpu-jupyter.sif
 
-singularity exec --nv --home $PWD $tfimage python ./img_classification_categorical.py
+singularity exec --nv --home $PWD $tfimage python ./img_classification_binary.py
