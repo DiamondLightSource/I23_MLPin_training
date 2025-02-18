@@ -14,6 +14,7 @@ import shutil
 
 today = date.today()
 now = today.strftime("%d%m%Y")
+tmpdir = "/dls/tmp/vwg85559"
 # original images are 1292x964
 
 cwd = os.getcwd()
@@ -28,7 +29,7 @@ folder_list = ["pinon", "pinoff"]
 #     "Pin_above_hotel_position",
 #     "Pin_place_in_block",
 # ]
-path = os.path.join(cwd, f"goniopin_auto_{now}_binary")
+path = os.path.join(tmpdir, f"goniopin_auto_{now}_binary")
 
 def croppit(filein, folderout):
     img = cv2.imread(filein)

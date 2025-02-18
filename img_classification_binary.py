@@ -10,12 +10,13 @@ import datetime
 
 parallel = True
 now_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tmpdir = "/dls/tmp/vwg85559"
 
 def run():
     print("Using TensorFlow v%s" % tf.__version__)
     
     cwd = os.getcwd()
-    data_dir = os.path.join(cwd, "goniopin_auto_18022025_binary")
+    data_dir = os.path.join(tmpdir, "goniopin_auto_18022025_binary")
     batch_size = 64
     img_width = 800  # 160 #1292
     img_height = 800  # 250 #964
