@@ -3,10 +3,10 @@ import os
 from tensorflow import keras
 
 
-model = tf.keras.models.load_model("20250215-200544_save_binary_batch16.h5")
+model = tf.keras.models.load_model("20250217-132648_binary_batch16.h5")
 model.summary()
 classes = ["pinoff", "pinon"]
-test_data_dir = "test_14022025_binary"
+test_data_dir = "test_17022025_binary"
 
 def infer(image, class_):
     img_in = keras.preprocessing.image.load_img(image, target_size=(800, 800))
@@ -14,13 +14,16 @@ def infer(image, class_):
     img_array = tf.expand_dims(img_array, 0)
     predictions = model.predict(img_array, verbose=0)
     score = predictions[0]
-    if score < 0.5:
+    if score < 0.05:
         print(f"{score} is {classes[0]}")
         predicted_label = classes[0]
-    else:
+    elif score > 0.95:
         print(f"{score} is {classes[1]}")
         predicted_label = classes[1]
-
+    else:
+        print(f"{score} is unknown")
+        predicted_label = "unknown"
+    
     if predicted_label == class_: 
         print(f"Correctly classified {image} as {predicted_label}")
         return 1

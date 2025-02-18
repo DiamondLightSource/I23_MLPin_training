@@ -14,7 +14,7 @@ color_map[layers.Dense]['fill'] = '#fb5607'
 color_map[layers.Flatten]['fill'] = '#ffbe0b'
 
 font = ImageFont.truetype("arial.ttf", 12)
-model = tf.keras.models.load_model("categorical.h5")
+model = tf.keras.models.load_model("20250217-132648_save_binary_batch16.h5.h5")
 model.summary()
 
 v = vk.layered_view(model=model, legend=True, font=font, color_map=color_map)

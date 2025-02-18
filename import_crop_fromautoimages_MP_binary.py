@@ -54,7 +54,7 @@ def calculateAverageColor(image):
     avg_color = np.mean(np_image, axis=(0, 1)).astype(int)
     return tuple(avg_color)
 
-def augmentSave(imageIn, num_augmented=2):
+def augmentSave(imageIn, num_augmented=79):
     image = Image.open(imageIn)
     image_np = np.array(image)
 

@@ -13,15 +13,13 @@ now_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
 def run():
     print("Using TensorFlow v%s" % tf.__version__)
-    #acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
-
-    # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
+    
     cwd = os.getcwd()
-    data_dir = os.path.join(cwd, "goniopin_auto_14022025_binary")
-    batch_size = 16
-    img_height = 800  # 250 #964
+    data_dir = os.path.join(cwd, "goniopin_auto_18022025_binary")
+    batch_size = 64
     img_width = 800  # 160 #1292
-    image_size = (img_height, img_width)
+    img_height = 800  # 250 #964
+
     seed = random.randint(11111111, 99999999)
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
@@ -44,30 +42,61 @@ def run():
         label_mode="binary",
     )
 
-    class_names = train_ds.class_names
+    # random_seed = random.randint(11111111, 99999999)
+
+    # train_datagen = ImageDataGenerator(rescale=1/255.)
+    # train_generator = train_datagen.flow_from_directory(
+    #     data_dir,
+    #     target_size=(img_height, img_width),
+    #     batch_size=batch_size,
+    #     class_mode='binary',
+    #     shuffle=True,
+    #     seed=random_seed
+    # )
+
+    # class_labels = train_generator.classes
+
+    # indices = np.arange(len(class_labels))
+    # train_indices, val_indices, train_labels, val_labels = train_test_split(
+    #     indices, class_labels, test_size=0.2, stratify=class_labels, random_state=random_seed, shuffle=True
+    # )
+
+    # train_generator.reset()
+    # train_generator_subset = train_datagen.flow_from_directory(
+    #     data_dir,
+    #     target_size=(img_height, img_width),
+    #     batch_size=batch_size,
+    #     class_mode='binary',
+    #     shuffle=True,
+    #     seed=random_seed,
+    #     subset='training'
+    # )
+    # train_generator_subset.samples = len(train_indices)
+    # train_generator_subset._filepaths = [train_generator._filepaths[i] for i in train_indices]
+    # train_generator_subset.classes = [train_labels[i] for i in train_indices]
+    # train_generator_subset._targets = np.asarray([train_labels[i] for i in train_indices])
+
+    # val_generator = train_datagen.flow_from_directory(
+    #     data_dir,
+    #     target_size=(img_height, img_width),
+    #     batch_size=batch_size,
+    #     class_mode='binary',
+    #     shuffle=False,
+    #     seed=random_seed,
+    #     subset='validation'
+    # )
+    # val_generator.samples = len(val_indices)
+    # val_generator._filepaths = [train_generator._filepaths[i] for i in val_indices]
+    # val_generator.classes = [val_labels[i] for i in val_indices]
+    # val_generator._targets = np.asarray([val_labels[i] for i in val_indices])
+
+    class_names = train_ds.classes
     print("Class names and their corresponding indices:")
     for index, class_name in enumerate(class_names):
         print(f"{index}: {class_name}")
 
-    # train_ds = train_ds.unbatch()
-    # labels = list(train_ds.map(lambda x, y: y))
-    # print(labels)
-
-    # Augment data
-    data_augmentation = Sequential(
-        [
-            keras.layers.RandomTranslation(
-                height_factor=0.1, width_factor=0.2, fill_mode="nearest"
-            ),
-            keras.layers.RandomContrast(factor=0.2),
-            keras.layers.RandomBrightness(factor=0.2),
-            keras.layers.RandomRotation(0.02, fill_mode="nearest"),
-        ]
-    )
-
     model = Sequential()
     model.add(layers.InputLayer(input_shape=(img_height, img_width, 3)))
-    #model.add(data_augmentation)
     model.add(layers.Rescaling(1.0 / 255))
 
     model.add(layers.Conv2D(32, 3, padding="same"))
@@ -108,7 +137,10 @@ def run():
     callbacks = [
         keras.callbacks.ModelCheckpoint(f"{now_string}_save_binary_batch{str(batch_size)}.h5", save_best_only=True),
         tf.keras.callbacks.EarlyStopping(
-            monitor="loss", patience=10, restore_best_weights=True
+            monitor="val_loss", patience=10, restore_best_weights=True
+        ),
+        tf.keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss", factor=0.1, patience=5, verbose=1
         ),
         tensorboard_callback,
     ]
