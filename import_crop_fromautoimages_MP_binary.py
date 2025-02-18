@@ -137,7 +137,7 @@ def processImages():
             future.result()
 
 def moveImagesToTest(path=path, percentage=0.1):
-    testdir = os.path.join(os.getcwd(), f"test_{now}_binary")
+    testdir = os.path.join(tmpdir, f"test_{now}_binary")
     if not os.path.exists(testdir):
         os.makedirs(testdir)
     for folder in folder_list:
