@@ -18,8 +18,11 @@ now = today.strftime("%d%m%Y")
 
 cwd = os.getcwd()
 snapshots_location = "/dls/i23/data/2022/cm31108-3/Sample_Loading_Snapshots/ECAM_6"
-ON_folders = ["After_sample_load", "Pin_gripper_on_gonio"] #"Gripper_approach_gonio"
-OFF_folders = ["Before_sample_load", "Gripper_approach_hotel"] # use similar number of images
+ON_folders = ["After_sample_load", "Pin_gripper_on_gonio"]  # "Gripper_approach_gonio"
+OFF_folders = [
+    "Before_sample_load",
+    "Gripper_approach_hotel",
+]  # use similar number of images
 folder_list = ["dark", "light", "pinon", "pinoff"]
 #     "Gripper_gripping_hotel_pin",
 #     "Gripper_retracted",
@@ -30,14 +33,16 @@ folder_list = ["dark", "light", "pinon", "pinoff"]
 # ]
 path = os.path.join(cwd, f"goniopin_auto_{now}")
 
+
 def croppit(filein, folderout):
     img = cv2.imread(filein)
     if img is None:
         print(f"Failed to load image: {filein}")
         return
-    cropped_image = img[100:900, 200:1000]
+    cropped_image = img[:, :]
     _, filename = os.path.split(filein)
     cv2.imwrite(os.path.join(folderout, filename), cropped_image)
+
 
 def changeBrightness(imageIn, dirOut, factor):
     if factor < 1:
@@ -49,10 +54,12 @@ def changeBrightness(imageIn, dirOut, factor):
         enhanced = enhancer.enhance(factor)
         enhanced.save(os.path.join(dirOut, ending + os.path.basename(imageIn)))
 
+
 def calculateAverageColor(image):
     np_image = np.array(image)
     avg_color = np.mean(np_image, axis=(0, 1)).astype(int)
     return tuple(avg_color)
+
 
 def augmentSave(imageIn, num_augmented=20):
     image = Image.open(imageIn)
@@ -63,7 +70,9 @@ def augmentSave(imageIn, num_augmented=20):
 
         # Apply random rotation
         angle = random.uniform(-1, 1)
-        augmented_image = augmented_image.rotate(angle, resample=Image.BICUBIC, fillcolor=avg_colour)
+        augmented_image = augmented_image.rotate(
+            angle, resample=Image.BICUBIC, fillcolor=avg_colour
+        )
 
         # Apply random translation
         max_dx = 0.04 * augmented_image.size[0]
@@ -75,7 +84,7 @@ def augmentSave(imageIn, num_augmented=20):
             Image.AFFINE,
             (1, 0, dx, 0, 1, dy),
             resample=Image.BICUBIC,
-            fillcolor=avg_colour
+            fillcolor=avg_colour,
         )
 
         # Apply random brightness
@@ -86,7 +95,12 @@ def augmentSave(imageIn, num_augmented=20):
         enhancer = ImageEnhance.Contrast(augmented_image)
         augmented_image = enhancer.enhance(random.uniform(0.6, 1.4))
 
-        augmented_image.save(os.path.join(os.path.dirname(imageIn), f"{os.path.basename(imageIn).split('.')[0]}_aug_{i}.jpg"))
+        augmented_image.save(
+            os.path.join(
+                os.path.dirname(imageIn),
+                f"{os.path.basename(imageIn).split('.')[0]}_aug_{i}.jpg",
+            )
+        )
 
 
 def processImages():
@@ -98,31 +112,61 @@ def processImages():
                 if image_name.endswith("jpg"):
                     image_path = os.path.join(folder_path, image_name)
                     futures.append(executor.submit(augmentSave, image_path))
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Augmenting images"):
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Augmenting images"
+        ):
             future.result()
+
 
 def generateDarkLight():
     darkDir = os.path.join(path, "dark")
     lightDir = os.path.join(path, "light")
     pinOnDir = os.path.join(path, "pinon")
     pinOffDir = os.path.join(path, "pinoff")
-    pinOnImages = [file for file in os.listdir(pinOnDir) if os.path.isfile(os.path.join(pinOnDir, file))]
-    pinOffImages = [file for file in os.listdir(pinOffDir) if os.path.isfile(os.path.join(pinOffDir, file))]
-    pinOnimageSelect = random.sample(pinOnImages, int(len(pinOnImages) * 0.5)) 
+    pinOnImages = [
+        file
+        for file in os.listdir(pinOnDir)
+        if os.path.isfile(os.path.join(pinOnDir, file))
+    ]
+    pinOffImages = [
+        file
+        for file in os.listdir(pinOffDir)
+        if os.path.isfile(os.path.join(pinOffDir, file))
+    ]
+    pinOnimageSelect = random.sample(pinOnImages, int(len(pinOnImages) * 0.5))
     pinOffimageSelect = random.sample(pinOffImages, int(len(pinOffImages) * 0.5))
 
     with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() - 1) as executor:
         futures = []
         for imageName in pinOnimageSelect:
             imagePath = os.path.join(pinOnDir, imageName)
-            futures.append(executor.submit(changeBrightness, imagePath, darkDir, random.uniform(0.0001, 0.0008)))
-            futures.append(executor.submit(changeBrightness, imagePath, lightDir, random.uniform(5.1, 6)))
+            futures.append(
+                executor.submit(
+                    changeBrightness, imagePath, darkDir, random.uniform(0.0001, 0.0008)
+                )
+            )
+            futures.append(
+                executor.submit(
+                    changeBrightness, imagePath, lightDir, random.uniform(5.1, 6)
+                )
+            )
         for imageName in pinOffimageSelect:
             imagePath = os.path.join(pinOffDir, imageName)
-            futures.append(executor.submit(changeBrightness, imagePath, darkDir, random.uniform(0.0001, 0.0006)))
-            futures.append(executor.submit(changeBrightness, imagePath, lightDir, random.uniform(4.5, 6)))
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing light and darks"):
+            futures.append(
+                executor.submit(
+                    changeBrightness, imagePath, darkDir, random.uniform(0.0001, 0.0006)
+                )
+            )
+            futures.append(
+                executor.submit(
+                    changeBrightness, imagePath, lightDir, random.uniform(4.5, 6)
+                )
+            )
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Processing light and darks"
+        ):
             future.result()
+
 
 def moveImagesToTest(path=path, percentage=0.1):
     testdir = os.path.join(os.getcwd(), f"test_{now}")
@@ -133,7 +177,7 @@ def moveImagesToTest(path=path, percentage=0.1):
         testclassdir = os.path.join(testdir, folder)
 
         if not os.path.exists(testclassdir):
-            os.makedirs(testclassdir)   
+            os.makedirs(testclassdir)
 
         images = glob.glob(os.path.join(classdir, "*.jpg"))
         numImg = int(len(images) * percentage)
@@ -141,6 +185,7 @@ def moveImagesToTest(path=path, percentage=0.1):
 
         for image in imgMov:
             shutil.move(image, testclassdir)
+
 
 def run():
     if os.path.exists(path):
@@ -161,19 +206,24 @@ def run():
             files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
             for file in files:
                 image = os.path.join(searchdir, file)
-                futures.append(executor.submit(croppit, image, os.path.join(path, "pinon")))
+                futures.append(
+                    executor.submit(croppit, image, os.path.join(path, "pinon"))
+                )
 
         for pinoff_image_dir in OFF_folders:
             searchdir = os.path.join(snapshots_location, "pin_OFF", pinoff_image_dir)
             files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
             for file in files:
                 image = os.path.join(searchdir, file)
-                futures.append(executor.submit(croppit, image, os.path.join(path, "pinoff")))
+                futures.append(
+                    executor.submit(croppit, image, os.path.join(path, "pinoff"))
+                )
 
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing images"):
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Processing images"
+        ):
             future.result()
 
-        
 
 if __name__ == "__main__":
     run()

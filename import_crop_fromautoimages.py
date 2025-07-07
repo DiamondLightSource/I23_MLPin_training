@@ -9,6 +9,7 @@ today = date.today()
 now = today.strftime("%d%m%Y")
 # original images are 1292x964
 
+
 def croppit(filein, folderout):
     img = cv2.imread(filein)
     cropped_image = img[100:900, 200:1000]
@@ -31,6 +32,7 @@ OFF_folders = [
 ]
 path = os.path.join(cwd, f"goniopin_auto_{now}")
 
+
 def changeBrightness(imageIn, dirOut, factor):
     if factor < 1:
         ending = "d"
@@ -41,14 +43,23 @@ def changeBrightness(imageIn, dirOut, factor):
         enhanced = enhancer.enhance(factor)
         enhanced.save(os.path.join(dirOut, ending + os.path.basename(imageIn)))
 
+
 def generateDarkLight():
     darkDir = os.path.join(path, "dark")
     lightDir = os.path.join(path, "light")
     pinOnDir = os.path.join(path, "pinon")
     pinOffDir = os.path.join(path, "pinoff")
-    pinOnImages = [file for file in os.listdir(pinOnDir) if os.path.isfile(os.path.join(pinOnDir, file))]
-    pinOffImages = [file for file in os.listdir(pinOffDir) if os.path.isfile(os.path.join(pinOffDir, file))]
-    pinOnimageSelect = random.sample(pinOnImages, int(len(pinOnImages) * 0.5)) 
+    pinOnImages = [
+        file
+        for file in os.listdir(pinOnDir)
+        if os.path.isfile(os.path.join(pinOnDir, file))
+    ]
+    pinOffImages = [
+        file
+        for file in os.listdir(pinOffDir)
+        if os.path.isfile(os.path.join(pinOffDir, file))
+    ]
+    pinOnimageSelect = random.sample(pinOnImages, int(len(pinOnImages) * 0.5))
     pinOffimageSelect = random.sample(pinOffImages, int(len(pinOffImages) * 0.5))
     for imageName in tqdm(pinOnimageSelect, desc="Processing pinon light and darks"):
         imagePath = os.path.join(pinOnDir, imageName)
@@ -58,6 +69,7 @@ def generateDarkLight():
         imagePath = os.path.join(pinOffDir, imageName)
         changeBrightness(imagePath, darkDir, 0.03)
         changeBrightness(imagePath, lightDir, 4.3)
+
 
 def run():
     if os.path.exists(path):

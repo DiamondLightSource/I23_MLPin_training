@@ -3,10 +3,11 @@ import os
 from tensorflow import keras
 
 
-model = tf.keras.models.load_model("20250217-132648_binary_batch16.h5")
+model = tf.keras.models.load_model("20250224-154633_binary_batch32.h5")
 model.summary()
 classes = ["pinoff", "pinon"]
-test_data_dir = "test_17022025_binary"
+test_data_dir = "test_19022025_binary"
+
 
 def infer(image, class_):
     img_in = keras.preprocessing.image.load_img(image, target_size=(800, 800))
@@ -23,14 +24,15 @@ def infer(image, class_):
     else:
         print(f"{score} is unknown")
         predicted_label = "unknown"
-    
-    if predicted_label == class_: 
+
+    if predicted_label == class_:
         print(f"Correctly classified {image} as {predicted_label}")
         return 1
     else:
         print(f"Incorrectly classified {image} as {predicted_label}")
         return 0
-    
+
+
 if __name__ == "__main__":
     correct = 0
     total = 0
@@ -40,6 +42,6 @@ if __name__ == "__main__":
             image_path = os.path.join(test_data_dir, class_, image_name)
             correct += infer(image_path, class_)
             total += 1
-    
+
     accuracy = correct / total
     print(f"Accuracy: {accuracy * 100:.2f}%")

@@ -112,8 +112,8 @@ def run():
     print(
         f"""
     The hyperparameter search is complete. The optimal number of units in the first densely-connected
-    layer is {best_hps.get('units')} and the optimal learning rate for the optimizer
-    is {best_hps.get('learning_rate')}.
+    layer is {best_hps.get("units")} and the optimal learning rate for the optimizer
+    is {best_hps.get("learning_rate")}.
     """
     )
 

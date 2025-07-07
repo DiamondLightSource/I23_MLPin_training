@@ -68,7 +68,8 @@ def infer():
         )
     else:
         print("No idea.")
-        plt.savefig(os.path.join(unsure, this_second))    
+        plt.savefig(os.path.join(unsure, this_second))
+
 
 if __name__ == "__main__":
     run()

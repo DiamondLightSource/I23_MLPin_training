@@ -13,12 +13,12 @@ import scikeras as sc
 print("Using TensorFlow v%s" % tf.__version__)
 acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
-#data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
+# data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
 cwd = os.getcwd()
 data_dir = os.path.join(cwd, "goniopin", "cropped")
 batch_size = 10
-img_height = 250 #250 #964 
-img_width = 160 #160 #1292 
+img_height = 250  # 250 #964
+img_width = 160  # 160 #1292
 image_size = (img_height, img_width)
 seed = 28273492
 
@@ -50,9 +50,7 @@ for images, labels in train_ds.take(1):
 
 plt.show()
 
-normalization_layer = keras.layers.Rescaling(
-    1.0 / 255
-)
+normalization_layer = keras.layers.Rescaling(1.0 / 255)
 
 data_augmentation = Sequential(
     [
@@ -70,10 +68,11 @@ for images, _ in train_ds.take(1):
         plt.axis("off")
 plt.show()
 
+
 def make_model(input_shape, num_classes):
     inputs = keras.Input(shape=input_shape)
     x = data_augmentation(inputs)
-    x = layers.Rescaling(1./255)(x)
+    x = layers.Rescaling(1.0 / 255)(x)
     x = layers.Conv2D(32, 3, strides=2, padding="same")(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation("relu")(x)
@@ -122,7 +121,10 @@ model = make_model(input_shape=image_size + (3,), num_classes=2)
 epochs = 50
 
 callbacks = [
-    keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"), tf.keras.callbacks.EarlyStopping(monitor='loss', patience=3, restore_best_weights=True),
+    keras.callbacks.ModelCheckpoint("save_at_{epoch}.h5"),
+    tf.keras.callbacks.EarlyStopping(
+        monitor="loss", patience=3, restore_best_weights=True
+    ),
 ]
 model.compile(
     optimizer=keras.optimizers.Adam(1e-3),
@@ -130,7 +132,10 @@ model.compile(
     metrics=["accuracy"],
 )
 model.fit(
-    train_ds, epochs=epochs, callbacks=callbacks, validation_data=val_ds,
+    train_ds,
+    epochs=epochs,
+    callbacks=callbacks,
+    validation_data=val_ds,
 )
 
 model.save("final.h5")

@@ -15,7 +15,7 @@ parallel = True
 
 def run():
     print("Using TensorFlow v%s" % tf.__version__)
-    #acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
+    # acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
     # data_dir = pathlib.Path("C:/Users/ULTMT/Documents/code/TFOD/I23_MLPin_training/goniopin/cropped")
     cwd = os.getcwd()
@@ -69,7 +69,7 @@ def run():
 
     model = Sequential()
     model.add(layers.InputLayer(input_shape=(img_height, img_width, 3)))
-    #model.add(data_augmentation)
+    # model.add(data_augmentation)
     model.add(layers.Rescaling(1.0 / 255))
 
     model.add(layers.Conv2D(32, 3, padding="same"))
@@ -105,10 +105,14 @@ def run():
 
     model.summary()
     log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(
+        log_dir=log_dir, histogram_freq=1
+    )
 
     callbacks = [
-        keras.callbacks.ModelCheckpoint(f"save_batch{str(batch_size)}.h5", save_best_only=True),
+        keras.callbacks.ModelCheckpoint(
+            f"save_batch{str(batch_size)}.h5", save_best_only=True
+        ),
         tf.keras.callbacks.EarlyStopping(
             monitor="loss", patience=3, restore_best_weights=True
         ),
@@ -118,6 +122,7 @@ def run():
     model.fit(train_ds, callbacks=callbacks, epochs=20, validation_data=val_ds)
 
     model.save(f"categorical_batch{str(batch_size)}.h5")
+
 
 if __name__ == "__main__":
     strategy = tf.distribute.MirroredStrategy()

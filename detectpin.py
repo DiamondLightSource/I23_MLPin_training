@@ -10,7 +10,6 @@ from object_detection.builders import model_builder
 from tkinter import *
 
 
-
 CUSTOM_MODEL_NAME = "my_ssd_resnet50v1fpn640x640"
 LABEL_MAP_NAME = "label_map.pbtxt"
 paths = {
@@ -58,7 +57,7 @@ while True:
     detections["num_detections"] = num_detections
     detections["detection_classes"] = detections["detection_classes"].astype(np.int64)
     if detections["detection_scores"][0] > 0.7:
-        print(f'I see pin, with a confidence of {detections["detection_scores"][0]}')
+        print(f"I see pin, with a confidence of {detections['detection_scores'][0]}")
     else:
         print("Not sure if pin is there...")
     label_id_offset = 1

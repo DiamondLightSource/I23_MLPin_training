@@ -10,7 +10,8 @@ import numpy as np
 
 model = tf.keras.models.load_model("categorical.h5")
 model.summary()
-classes = ['dark', 'light', 'pinoff', 'pinon']
+classes = ["dark", "light", "pinoff", "pinon"]
+
 
 def urltoimage(url):
     resp = urllib.request.urlopen(url)
@@ -35,14 +36,17 @@ def infer():
     img_array = keras.preprocessing.image.img_to_array(img_in)
     img_array = np.expand_dims(img_array, 0)
 
-    interpreter.set_tensor(input_details[0]['index'], img_array)
+    interpreter.set_tensor(input_details[0]["index"], img_array)
     interpreter.invoke()
 
-    predictions = interpreter.get_tensor(output_details[0]['index'])
+    predictions = interpreter.get_tensor(output_details[0]["index"])
     score = tf.nn.softmax(predictions[0])
 
-    print("Status is probably {} with {:.2f} % conf.".format(classes[np.argmax(score)], 200 * np.max(score)))
-
+    print(
+        "Status is probably {} with {:.2f} % conf.".format(
+            classes[np.argmax(score)], 200 * np.max(score)
+        )
+    )
 
 
 if __name__ == "__main__":

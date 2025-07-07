@@ -58,7 +58,7 @@ def infer():
     img_array = tf.expand_dims(img_array, 0)
     predictions = model.predict(img_array)
     score = predictions[0]
-    #print(predictions)
+    # print(predictions)
     if score > 0.94:
         print(f"{100 * score}% sure pin is ON")
         plt.savefig(os.path.join(pinon, this_second + "_" + str(int(100 * score))))
@@ -77,4 +77,4 @@ if __name__ == "__main__":
     while True:
         infer()
         sleep(1)
-        #sleep(random.randint(5, 160))
+        # sleep(random.randint(5, 160))

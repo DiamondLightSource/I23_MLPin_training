@@ -20,7 +20,7 @@ def run():
     batch_size = 32
     img_height = 300  # 250 #964
     img_width = 160  # 160 #1292
-    seed = random.randint(11111111,99999999)
+    seed = random.randint(11111111, 99999999)
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
@@ -54,31 +54,35 @@ def run():
     )
 
     model = Sequential()
-    model.add(layers.InputLayer(input_shape=(img_height,img_width,3)))
+    model.add(layers.InputLayer(input_shape=(img_height, img_width, 3)))
     model.add(data_augmentation)
     model.add(layers.Rescaling(1.0 / 255))
-    
-    model.add(layers.Conv2D(32, 3, padding='same'))
-    model.add(layers.Activation('relu'))
+
+    model.add(layers.Conv2D(32, 3, padding="same"))
+    model.add(layers.Activation("relu"))
     model.add(layers.Conv2D(32, (3, 3)))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Dropout(0.25))
 
-    model.add(layers.Conv2D(64, (3, 3), padding='same'))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Conv2D(64, (3, 3), padding="same"))
+    model.add(layers.Activation("relu"))
     model.add(layers.Conv2D(64, (3, 3)))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Activation("relu"))
     model.add(layers.MaxPooling2D(pool_size=(2, 2)))
     model.add(layers.Dropout(0.25))
 
     model.add(layers.Flatten())
     model.add(layers.Dense(192))
-    model.add(layers.Activation('relu'))
+    model.add(layers.Activation("relu"))
     model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(4, activation='softmax'))
+    model.add(layers.Dense(4, activation="softmax"))
 
-    model.compile(keras.optimizers.Adam(0.0001), loss="categorical_crossentropy", metrics=["accuracy", "mae"])
+    model.compile(
+        keras.optimizers.Adam(0.0001),
+        loss="categorical_crossentropy",
+        metrics=["accuracy", "mae"],
+    )
 
     model.summary()
 
@@ -92,6 +96,7 @@ def run():
     model.fit(train_ds, callbacks=callbacks, epochs=10, validation_data=val_ds)
 
     model.save("categorical_gripper.h5")
+
 
 strategy = tf.distribute.MirroredStrategy()
 if not parallel:

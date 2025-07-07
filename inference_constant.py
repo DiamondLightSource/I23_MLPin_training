@@ -11,6 +11,7 @@ import numpy as np
 model = tf.keras.models.load_model("final.h5")
 model.summary()
 
+
 def urltoimage(url):
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")

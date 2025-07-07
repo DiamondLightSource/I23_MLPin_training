@@ -10,17 +10,18 @@ import matplotlib.pyplot as plt
 
 parallel = True
 
+
 def run():
     print(f"Using TensorFlow {tf.__version__}")
-    #acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
+    # acc_str = "accuracy" if tf.__version__[:2] == "2." else "acc"
 
     cwd = os.getcwd()
     data_dir = os.path.join(cwd, "goniopin_auto_12012023")
     batch_size = 32
-    img_height = 300 
-    img_width = 160 
+    img_height = 300
+    img_width = 160
     image_size = (img_height, img_width)
-    seed = random.randint(11111111,99999999)
+    seed = random.randint(11111111, 99999999)
 
     train_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,

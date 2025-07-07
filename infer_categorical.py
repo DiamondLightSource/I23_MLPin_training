@@ -10,7 +10,8 @@ import numpy as np
 
 model = tf.keras.models.load_model("categorical.h5")
 model.summary()
-classes = ['dark', 'light', 'pinoff', 'pinon']
+classes = ["dark", "light", "pinoff", "pinon"]
+
 
 def urltoimage(url):
     resp = urllib.request.urlopen(url)
@@ -30,8 +31,12 @@ def infer():
     img_array = tf.expand_dims(img_array, 0)
     predictions = model.predict(img_array, verbose=0)
     score = tf.nn.softmax(predictions[0])
-    #print("This image most likely belongs to {} with a {:.2f} percent confidence.".format(classes[np.argmax(score)], 100 * np.max(score)))
-    print("Status is probably {} with {:.2f} % conf.".format(classes[np.argmax(score)], 200 * np.max(score)))
+    # print("This image most likely belongs to {} with a {:.2f} percent confidence.".format(classes[np.argmax(score)], 100 * np.max(score)))
+    print(
+        "Status is probably {} with {:.2f} % conf.".format(
+            classes[np.argmax(score)], 200 * np.max(score)
+        )
+    )
 
 
 if __name__ == "__main__":

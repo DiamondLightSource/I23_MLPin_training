@@ -1,4 +1,9 @@
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
 import random
 import tensorflow as tf
 from tensorflow import keras
@@ -6,15 +11,17 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 import datetime
 import matplotlib.pyplot as plt
+import cv2
+cv2.setNumThreads(0)
 
 parallel = True
 now_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tmpdir = "/dls/tmp/vwg85559"
-data_dir_name = "goniopin_auto_20062025_binary"
+data_dir_name = "goniopin_auto_24062025_binary"
 batch_size = 16
-resume_epoch = 29
+resume_epoch = 47
 cont = True # continue from saved epoch
-checkpoint_path = f"checkpoints/20250624-134928_epoch29_binary_batch16.h5"
+checkpoint_path = f"checkpoints/20250625-161225_epoch47_binary_batch16.h5"
 
 
 os.makedirs("checkpoints", exist_ok=True)
@@ -52,15 +59,16 @@ def run():
         batch_size=batch_size,
         label_mode="binary",
     )
+    train_ds = train_ds.prefetch(buffer_size=2)
 
-    os.makedirs("sample_images", exist_ok=True)
-    for images, labels in train_ds.take(1):
-        for i in range(min(5, len(images))):
-            plt.imshow(images[i].numpy().astype("uint8"))
-            plt.title(f"Label: {labels[i].numpy()}")
-            plt.axis('off')
-            plt.savefig(f"sample_images/sample_{i}_label_{int(labels[i].numpy())}.png")
-            plt.close()
+    # os.makedirs("sample_images", exist_ok=True)
+    # for images, labels in train_ds.take(1):
+    #     for i in range(min(5, len(images))):
+    #         plt.imshow(images[i].numpy().astype("uint8"))
+    #         plt.title(f"Label: {labels[i].numpy()}")
+    #         plt.axis('off')
+    #         plt.savefig(f"sample_images/sample_{i}_label_{int(labels[i].numpy())}.png")
+    #         plt.close()
 
     val_ds = tf.keras.preprocessing.image_dataset_from_directory(
         data_dir,
@@ -71,6 +79,7 @@ def run():
         batch_size=batch_size,
         label_mode="binary",
     )
+    val_ds = val_ds.prefetch(buffer_size=2)
 
     if cont is False:
         initial_epoch = 1
@@ -96,8 +105,8 @@ def run():
         model.add(layers.MaxPooling2D(pool_size=(2, 2)))
         model.add(layers.Dropout(0.25))
 
-    #    model.add(layer.Flatten())
-        model.add(layers.GlobalAveragePooling2D())
+        model.add(layers.Flatten())
+    #    model.add(layers.GlobalAveragePooling2D())
 
         # model.add(layers.Dense(144, activation="silu"))
         # model.add(layers.BatchNormalization())

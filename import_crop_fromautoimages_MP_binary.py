@@ -6,8 +6,6 @@ from PIL import Image, ImageEnhance
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing
-import random
-from PIL import Image, ImageEnhance, ImageOps
 import numpy as np
 import glob
 import shutil
@@ -19,8 +17,9 @@ tmpdir = "/dls/tmp/vwg85559"
 
 cwd = os.getcwd()
 snapshots_location = "/dls/i23/data/2022/cm31108-3/Sample_Loading_Snapshots/ECAM_6"
-ON_folders = ["After_sample_load", "Pin_gripper_on_gonio"] #"Gripper_approach_gonio"
-OFF_folders = ["Before_sample_load", "Gripper_approach_hotel"] # use similar number of images
+ON_folders = ["Pin_gripper_on_gonio"]  #"After_sample_load"# "Gripper_approach_gonio"
+OFF_folders = ["Before_sample_load"]
+  # use similar number of images
 folder_list = ["pinon", "pinoff"]
 #     "Gripper_gripping_hotel_pin",
 #     "Gripper_retracted",
@@ -31,14 +30,16 @@ folder_list = ["pinon", "pinoff"]
 # ]
 path = os.path.join(tmpdir, f"goniopin_auto_{now}_binary")
 
+
 def croppit(filein, folderout):
     img = cv2.imread(filein)
     if img is None:
         print(f"Failed to load image: {filein}")
         return
-    cropped_image = img[100:900, 200:1000]
+    cropped_image = img[100:-100, 100:-100]
     _, filename = os.path.split(filein)
     cv2.imwrite(os.path.join(folderout, filename), cropped_image)
+
 
 def changeBrightness(imageIn, dirOut, factor):
     if factor < 1:
@@ -50,12 +51,14 @@ def changeBrightness(imageIn, dirOut, factor):
         enhanced = enhancer.enhance(factor)
         enhanced.save(os.path.join(dirOut, ending + os.path.basename(imageIn)))
 
+
 def calculateAverageColor(image):
     np_image = np.array(image)
     avg_color = np.mean(np_image, axis=(0, 1)).astype(int)
     return tuple(avg_color)
 
-def augmentSave(imageIn, num_augmented=79):
+
+def augmentSave(imageIn, num_augmented=10):
     image = Image.open(imageIn)
     image_np = np.array(image)
 
@@ -64,8 +67,15 @@ def augmentSave(imageIn, num_augmented=79):
 
         # Apply random rotation
         angle = random.uniform(-0.5, 0.5)
-        M = cv2.getRotationMatrix2D((augmented_image.shape[1] / 2, augmented_image.shape[0] / 2), angle, 1)
-        augmented_image = cv2.warpAffine(augmented_image, M, (augmented_image.shape[1], augmented_image.shape[0]), borderMode=cv2.BORDER_REFLECT)
+        M = cv2.getRotationMatrix2D(
+            (augmented_image.shape[1] / 2, augmented_image.shape[0] / 2), angle, 1
+        )
+        augmented_image = cv2.warpAffine(
+            augmented_image,
+            M,
+            (augmented_image.shape[1], augmented_image.shape[0]),
+            borderMode=cv2.BORDER_REFLECT,
+        )
 
         # Apply random translation
         max_dx = 0.01 * augmented_image.shape[1]
@@ -73,7 +83,12 @@ def augmentSave(imageIn, num_augmented=79):
         dx = random.uniform(-max_dx, max_dx)
         dy = random.uniform(-max_dy, max_dy)
         M = np.float32([[1, 0, dx], [0, 1, dy]])
-        augmented_image = cv2.warpAffine(augmented_image, M, (augmented_image.shape[1], augmented_image.shape[0]), borderMode=cv2.BORDER_REFLECT)
+        augmented_image = cv2.warpAffine(
+            augmented_image,
+            M,
+            (augmented_image.shape[1], augmented_image.shape[0]),
+            borderMode=cv2.BORDER_REFLECT,
+        )
 
         # Convert back to PIL Image for brightness and contrast adjustments
         augmented_image = Image.fromarray(augmented_image)
@@ -85,43 +100,14 @@ def augmentSave(imageIn, num_augmented=79):
         # Apply random contrast
         enhancer = ImageEnhance.Contrast(augmented_image)
         augmented_image = enhancer.enhance(random.uniform(0.6, 1.4))
-        
-        augmented_image.save(os.path.join(os.path.dirname(imageIn), f"{os.path.basename(imageIn).split('.')[0]}_aug_{i}.jpg"), quality=100)
 
-
-# def augmentSave(imageIn, num_augmented=20):
-#     image = Image.open(imageIn)
-#     avg_colour = calculateAverageColor(image)
-
-#     for i in range(num_augmented):
-#         augmented_image = image.copy()
-
-#         # Apply random rotation
-#         angle = random.uniform(-1, 1)
-#         augmented_image = augmented_image.rotate(angle, resample=Image.BICUBIC, fillcolor=avg_colour)
-
-#         # Apply random translation
-#         max_dx = 0.04 * augmented_image.size[0]
-#         max_dy = 0.04 * augmented_image.size[1]
-#         dx = random.uniform(-max_dx, max_dx)
-#         dy = random.uniform(-max_dy, max_dy)
-#         augmented_image = augmented_image.transform(
-#             augmented_image.size,
-#             Image.AFFINE,
-#             (1, 0, dx, 0, 1, dy),
-#             resample=Image.BICUBIC,
-#             fillcolor=avg_colour
-#         )
-
-#         # Apply random brightness
-#         enhancer = ImageEnhance.Brightness(augmented_image)
-#         augmented_image = enhancer.enhance(random.uniform(0.6, 1.4))
-
-#         # Apply random contrast
-#         enhancer = ImageEnhance.Contrast(augmented_image)
-#         augmented_image = enhancer.enhance(random.uniform(0.6, 1.4))
-
-#         augmented_image.save(os.path.join(os.path.dirname(imageIn), f"{os.path.basename(imageIn).split('.')[0]}_aug_{i}.jpg"))
+        augmented_image.save(
+            os.path.join(
+                os.path.dirname(imageIn),
+                f"{os.path.basename(imageIn).split('.')[0]}_aug_{i}.jpg",
+            ),
+            quality=95,
+        )
 
 
 def processImages():
@@ -133,11 +119,14 @@ def processImages():
                 if image_name.endswith("jpg"):
                     image_path = os.path.join(folder_path, image_name)
                     futures.append(executor.submit(augmentSave, image_path))
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Augmenting images"):
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Augmenting images"
+        ):
             future.result()
 
+
 def moveImagesToTest(path=path, percentage=0.1):
-    testdir = os.path.join(tmpdir, f"test_{now}_binary")
+    testdir = os.path.join(cwd, f"test_{now}_binary")
     if not os.path.exists(testdir):
         os.makedirs(testdir)
     for folder in folder_list:
@@ -145,7 +134,7 @@ def moveImagesToTest(path=path, percentage=0.1):
         testclassdir = os.path.join(testdir, folder)
 
         if not os.path.exists(testclassdir):
-            os.makedirs(testclassdir)   
+            os.makedirs(testclassdir)
 
         images = glob.glob(os.path.join(classdir, "*.jpg"))
         numImg = int(len(images) * percentage)
@@ -153,6 +142,7 @@ def moveImagesToTest(path=path, percentage=0.1):
 
         for image in tqdm(imgMov, desc=f"Moving images from {folder}"):
             shutil.move(image, testclassdir)
+
 
 def run():
     if os.path.exists(path):
@@ -173,19 +163,24 @@ def run():
             files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
             for file in files:
                 image = os.path.join(searchdir, file)
-                futures.append(executor.submit(croppit, image, os.path.join(path, "pinon")))
+                futures.append(
+                    executor.submit(croppit, image, os.path.join(path, "pinon"))
+                )
 
         for pinoff_image_dir in OFF_folders:
             searchdir = os.path.join(snapshots_location, "pin_OFF", pinoff_image_dir)
             files = [f for f in os.listdir(searchdir) if f.endswith("jpg")]
             for file in files:
                 image = os.path.join(searchdir, file)
-                futures.append(executor.submit(croppit, image, os.path.join(path, "pinoff")))
+                futures.append(
+                    executor.submit(croppit, image, os.path.join(path, "pinoff"))
+                )
 
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing images"):
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Processing images"
+        ):
             future.result()
 
-        
 
 if __name__ == "__main__":
     run()

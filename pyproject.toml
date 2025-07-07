@@ -1,0 +1,21 @@
+[project]
+name = "i23-mlpin-training"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "keras-tuner>=1.4.7",
+    "numpy<2",
+    "nvidia-cuda-runtime-cu11>=11.8.89",
+    "nvidia-cudnn-cu11>=9.7.1.26",
+    "nvidia-pyindex>=1.0.9",
+    "opencv-python-headless>=4.11.0.86",
+    "optuna>=4.2.1",
+    "optuna-integration[tfkeras]>=4.2.1",
+    "pillow>=11.1.0",
+    "ray[tune]>=2.42.1",
+    "ruff>=0.9.7",
+    "tensorflow[and-cuda]>=2.14.0",
+    "tqdm>=4.67.1",
+]
