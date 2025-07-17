@@ -589,3 +589,4 @@ Tensorflow/workspace/models/my_ssd_mobnet/train/events.out.tfevents.1652860097.D
 ./Tensorflow/*
 uv.lock
 labels.txt
+tmux_1.txt
