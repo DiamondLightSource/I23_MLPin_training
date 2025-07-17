@@ -68,3 +68,5 @@ layerview_3d.PNG
 # /Tensorflow/models
 # /Tensorflow/protoc
 # /Tensorflow/workspace/pre-trained-models
+.bash_history
+.python_history
