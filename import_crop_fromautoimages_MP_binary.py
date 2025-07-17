@@ -58,7 +58,7 @@ def calculateAverageColor(image):
     return tuple(avg_color)
 
 
-def augmentSave(imageIn, num_augmented=10):
+def augmentSave(imageIn, num_augmented=4):
     image = Image.open(imageIn)
     image_np = np.array(image)
 
@@ -66,7 +66,7 @@ def augmentSave(imageIn, num_augmented=10):
         augmented_image = image_np.copy()
 
         # Apply random rotation
-        angle = random.uniform(-0.5, 0.5)
+        angle = random.uniform(-1, 1)
         M = cv2.getRotationMatrix2D(
             (augmented_image.shape[1] / 2, augmented_image.shape[0] / 2), angle, 1
         )
@@ -78,8 +78,8 @@ def augmentSave(imageIn, num_augmented=10):
         )
 
         # Apply random translation
-        max_dx = 0.01 * augmented_image.shape[1]
-        max_dy = 0.01 * augmented_image.shape[0]
+        max_dx = 0.1 * augmented_image.shape[1]
+        max_dy = 0.1 * augmented_image.shape[0]
         dx = random.uniform(-max_dx, max_dx)
         dy = random.uniform(-max_dy, max_dy)
         M = np.float32([[1, 0, dx], [0, 1, dy]])
