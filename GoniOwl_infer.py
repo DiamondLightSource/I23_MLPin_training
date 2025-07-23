@@ -3,10 +3,10 @@ import os
 from tensorflow import keras
 
 
-model = tf.keras.models.load_model("20250224-154633_binary_batch32.h5")
+model = tf.keras.models.load_model("20250714-111015_epoch20_binary_batch4.h5")
 model.summary()
 classes = ["pinoff", "pinon"]
-test_data_dir = "test_19022025_binary"
+test_data_dir = "test_23072025_binary"
 
 def get_first_image_size(data_dir):
     pinon_dir = os.path.join(data_dir, "pinon")
@@ -18,8 +18,8 @@ def get_first_image_size(data_dir):
     first_file = os.path.join(pinon_dir, files[0])
     img_bytes = tf.io.read_file(first_file)
     img = tf.image.decode_image(img_bytes)
-    height = img.shape[0]
-    width = img.shape[1]
+    height = img.shape[0] / 5
+    width = img.shape[1] / 5
     return height, width
 
 def infer(image, class_):
